@@ -1,41 +1,45 @@
 package cl.ucn.main;
 
-import cl.ucn.modelo.Usuario;
-import jakarta.persistence.*;
+import cl.ucn.modelo.*;
+import jakarta.persistence.EntityManager;
 
-import java.util.List;
+import java.util.Optional;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("multimediaApp");
+        EntityManagerFactory emf = EntityManagerFactorySingleton.getInstance();
         EntityManager em = emf.createEntityManager();
 
-        // Parte 1
+        // Patrón Strategy: Buscamos primero en la base de datos, si no, en el CSV
+        BusquedaUsuarioStrategy busquedaBaseDatos = new BusquedaBaseDatosStrategy(em);
+        BusquedaUsuarioStrategy busquedaCSV = new BusquedaCSVStrategy("usuarios.csv");
+
         int rut = 89830291;
-        String jpql = "SELECT u from Usuario u WHERE u.rut = :rut";
-        TypedQuery<Usuario> query = em.createQuery(jpql, Usuario.class);
-        query.setParameter("rut", rut);
-        try {
-            Usuario usuario = query.getSingleResult();
+        Optional<Usuario> usuarioOpt = busquedaBaseDatos.buscarUsuario(rut);
+
+        if (usuarioOpt.isEmpty()) {
+            usuarioOpt = busquedaCSV.buscarUsuario(rut);
+        }
+
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
             System.out.println("El usuario: " + usuario.getRut() + " existe!");
-        }catch (NoResultException e){
+
+            // Usamos el proxy para controlar el acceso a recursos protegidos
+            RecursosMultimedia recurso = usuario.getRecursosMultimedia();
+            RecursosMultimediaProxy proxy = new RecursosMultimediaProxy(recurso, usuario);
+            proxy.cargar();
+            proxy.mostrar();
+
+        } else {
             System.out.println("El usuario no existe!");
         }
 
-        // Parte 2
-        jpql = "SELECT u from Usuario u";
-        TypedQuery<Usuario> query1 = em.createQuery(jpql, Usuario.class);
-        List<Usuario> usuarios = query1.getResultList();
-        for (Usuario usuario : usuarios){
-
-            System.out.println("Rut: " + usuario.getRut() + " Permiso: " + usuario.isTienePermiso() + " Archivo: " +
-                    usuario.getRecursosMultimedia().getNombre() + " Protegido: " + usuario.getRecursosMultimedia().isProtegido());
-
-        }
-
         em.close();
-
+        EntityManagerFactorySingleton.close();
     }
 }
+
+
