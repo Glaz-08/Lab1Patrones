@@ -25,7 +25,7 @@ public class BusquedaCSVStrategy implements BusquedaUsuarioStrategy {
                     usuario.setRut(rutArchivo);
                     usuario.setNombre(campos[1]);
                     usuario.setTienePermiso(Boolean.parseBoolean(campos[2]));
-                    // Aquí podrías asignar el recurso multimedia si fuera necesario
+                    
                     return Optional.of(usuario);
                 }
             }

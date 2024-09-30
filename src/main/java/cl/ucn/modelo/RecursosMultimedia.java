@@ -18,7 +18,7 @@ public class RecursosMultimedia {
     private List<Usuario> usuarios;
 
     public void cargar() {
-        // Simula la carga de un archivo grande en memoria
+        
         System.out.println("Cargando el archivo: " + nombre + " (" + tipo + ")");
     }
 

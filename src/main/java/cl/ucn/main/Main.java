@@ -12,7 +12,7 @@ public class Main {
         EntityManagerFactory emf = EntityManagerFactorySingleton.getInstance();
         EntityManager em = emf.createEntityManager();
 
-        // Patrón Strategy: Buscamos primero en la base de datos, si no, en el CSV
+        // Patrón Strategy, Buscamos primero en la base de datos, si no, en el CSV
         BusquedaUsuarioStrategy busquedaBaseDatos = new BusquedaBaseDatosStrategy(em);
         BusquedaUsuarioStrategy busquedaCSV = new BusquedaCSVStrategy("usuarios.csv");
 
